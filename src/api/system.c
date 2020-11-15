@@ -341,7 +341,7 @@ static int f_exec(lua_State *L) {
   char *buf = malloc(len + 32);
   if (!buf) { luaL_error(L, "buffer allocation failed"); }
 #if _WIN32
-  sprintf(buf, "cmd /c \"%s\"", cmd);
+  sprintf(buf, "powershell Start-Process -NoNewWindow %s", cmd);
   WinExec(buf, SW_HIDE);
 #else
   sprintf(buf, "%s &", cmd);

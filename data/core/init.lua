@@ -8,6 +8,7 @@ local RootView
 local StatusView
 local CommandView
 local Doc
+local hobbes
 
 local core = {}
 
@@ -81,6 +82,8 @@ function core.init()
   StatusView = require "core.statusview"
   CommandView = require "core.commandview"
   Doc = require "core.doc"
+  hobbes = require "plugins.hobbes"
+
 
   local project_dir = EXEDIR
   local files = {}
@@ -340,16 +343,13 @@ function core.on_event(type, ...)
     core.root_view:on_mouse_wheel(...)
   elseif type == "filedropped" then
     local filename, mx, my = ...
+
+    local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
+    node:set_active_view(node.active_view)
+    
     local info = system.get_file_info(filename)
-    if info and info.type == "dir" then
-      system.exec(string.format("%q %q", EXEFILE, filename))
-    else
-      local ok, doc = core.try(core.open_doc, filename)
-      if ok then
-        local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
-        node:set_active_view(node.active_view)
-        core.root_view:open_doc(doc)
-      end
+    if info and info.type == "file" then
+      hobbes.file_drop(filename)
     end
   elseif type == "quit" then
     core.quit()

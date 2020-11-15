@@ -160,9 +160,7 @@ local commands = {
     local line1, _, line2 = doc():get_selection(true)
     if line1 == line2 then line2 = line2 + 1 end
     local text = doc():get_text(line1, 1, line2, math.huge)
-    text = text:gsub("(.-)\n[\t ]*", function(x)
-      return x:find("^%s*$") and x or x .. " "
-    end)
+    text = text:gsub("\n[\t ]*", " ")
     doc():insert(line1, 1, text)
     doc():remove(line1, #text + 1, line2, math.huge)
     if doc():has_selection() then
