@@ -58,12 +58,12 @@ end
 -- Checks if the clipboard contains a filepath
 function hobbes.file_drop(dropped_path)
 
-    print("Dropping ")
+    core.log("Dropping ")
 
     -- Get the current open file path
     local doc = core.active_view.doc
 
-    -- print("Active view name " .. core.active_view:get_name())
+    core.log("Active view name " .. core.active_view:get_name())
 
     if not doc.filename then
       core.error "Cannot copy location of unsaved doc"
@@ -73,18 +73,21 @@ function hobbes.file_drop(dropped_path)
     local current_path = system.absolute_path(doc.filename)
     local hobbes_path  = system.absolute_path(".")
 
+    core.log('Doc filename ' .. doc.filename)
+
     -- Move to the current path
-    local cur_filename = string.match(doc.filename, '/.+%.md')
-    -- print('Cur filename ' .. cur_filename)
+    local cur_filename = string.match(doc.filename, hobbes.separator() .. '.+%.md')
+    core.log('Cur filename ' .. cur_filename)
+
     system.chdir(string.gsub(current_path, cur_filename, ""))
 
-    -- print("Before moving " .. system.absolute_path("."))
+    core.log("Before moving " .. system.absolute_path("."))
     
     if system.get_file_info(".attachments") then
 
         -- Get the correct new name and path
         local dropped_filename = string.gsub(dropped_path, dropped_path:match("^(.*)[/\\].*$"), "")
-        local new_path = system.absolute_path(".") .. "/.attachments" .. dropped_filename
+        local new_path = system.absolute_path(".") .. hobbes.separator() .. ".attachments" .. dropped_filename
 
         print("The new path would be " .. new_path)
 
@@ -100,10 +103,10 @@ function hobbes.file_drop(dropped_path)
         output_file:close()
 
         -- Compute the relative path
-        local _, count = string.gsub(cur_filename, "/", "")
-        local rel_path = string.rep("../", count-1) .. ".attachments" .. dropped_filename
+        local _, count = string.gsub(cur_filename, hobbes.separator(), "")
+        local rel_path = string.rep(".." .. hobbes.separator(), count-1) .. ".attachments" .. dropped_filename
 
-        print ("Rel path " .. rel_path)
+        core.log("Rel path " .. rel_path)
 
         doc:text_input(rel_path)
     end
