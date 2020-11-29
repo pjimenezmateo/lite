@@ -11,7 +11,7 @@ local hobbes = {}
 function hobbes.platform_git()
 
     if PLATFORM == "Windows" then
-        system.exec("git pull; git add .; git commit -m \"Hobbes sync\"; git push")
+        system.exec("git pull; git add .; git commit -m HobbesLite; git push")
     else
         system.exec("(git pull; git add .; git commit -m \"Hobbes sync\"; git push)")
     end
@@ -58,12 +58,12 @@ end
 -- Checks if the clipboard contains a filepath
 function hobbes.file_drop(dropped_path)
 
-    core.log("Dropping ")
+    -- core.log("Dropping ")
 
     -- Get the current open file path
     local doc = core.active_view.doc
 
-    core.log("Active view name " .. core.active_view:get_name())
+    -- core.log("Active view name " .. core.active_view:get_name())
 
     if not doc.filename then
       core.error "Cannot copy location of unsaved doc"
@@ -73,7 +73,7 @@ function hobbes.file_drop(dropped_path)
     local current_path = system.absolute_path(doc.filename)
     local hobbes_path  = system.absolute_path(".")
 
-    core.log('Doc filename ' .. doc.filename)
+    -- core.log('Doc filename ' .. doc.filename)
 
     -- Move to the current path
     local cur_filename = string.match(doc.filename, hobbes.separator() .. '.+%.md')
@@ -81,15 +81,24 @@ function hobbes.file_drop(dropped_path)
 
     system.chdir(string.gsub(current_path, cur_filename, ""))
 
-    core.log("Before moving " .. system.absolute_path("."))
+    -- core.log("Before moving " .. system.absolute_path("."))
     
     if system.get_file_info(".attachments") then
 
         -- Get the correct new name and path
         local dropped_filename = string.gsub(dropped_path, dropped_path:match("^(.*)[/\\].*$"), "")
-        local new_path = system.absolute_path(".") .. hobbes.separator() .. ".attachments" .. dropped_filename
 
-        print("The new path would be " .. new_path)
+        if PLATFORM == "Windows" then
+            dropped_filename = string.gsub(dropped_filename, "\\", "")
+        else
+            dropped_filename = string.gsub(dropped_filename, "/", "")
+        end
+
+        local new_path = system.absolute_path(".") .. hobbes.separator() .. ".attachments" .. hobbes.separator() .. dropped_filename
+
+        core.log("Dropped " .. dropped_filename)
+
+        -- print("The new path would be " .. new_path)
 
         -- Read original file and create the new one
         local input_file  = io.open(dropped_path, "rb")
@@ -104,9 +113,9 @@ function hobbes.file_drop(dropped_path)
 
         -- Compute the relative path
         local _, count = string.gsub(cur_filename, hobbes.separator(), "")
-        local rel_path = string.rep(".." .. hobbes.separator(), count-1) .. ".attachments" .. dropped_filename
+        local rel_path = string.rep("../", count-1) .. ".attachments/" .. dropped_filename
 
-        core.log("Rel path " .. rel_path)
+        -- core.log("Rel path " .. rel_path)
 
         doc:text_input(rel_path)
     end
